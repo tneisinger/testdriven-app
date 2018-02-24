@@ -1,0 +1,31 @@
+FROM python:3.6.4
+
+# install environment dependencies
+RUN apt-get update -yqq \
+  && apt-get install -yqq --no-install-recommends \
+    netcat \
+  && apt-get -q clean
+
+# set working directory
+RUN mkdir -p /usr/src/app
+WORKDIR /usr/src/app
+
+# add requirements
+COPY ./requirements.txt /usr/src/app/requirements.txt
+
+# install requirements
+RUN pip install -r requirements.txt
+
+# add app
+COPY . /usr/src/app
+
+# Create the group and user to be used in this container
+RUN groupadd flaskgroup && useradd -m -g flaskgroup -s /bin/bash flask
+
+# Give user 'flask' recursive ownership of the /usr/src/app dir
+RUN chown -R flask:flaskgroup /usr/src/app
+
+USER flask
+
+# run server
+#CMD python manage.py run -h 0.0.0.0
